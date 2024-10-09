@@ -3,7 +3,17 @@ SELECT
     lead_id,
     created_at AS creation_date
 FROM 
-    lead
+    lead;
+
+CREATE TEMP TABLE visit AS
+SELECT 
+    lead_id,
+    created_at AS visit
+FROM 
+    event
+WHERE 
+	event_type = 'doc.salesVisitReport.uploaded';
+
 
 CREATE TEMP TABLE approval AS
 SELECT 
@@ -12,16 +22,21 @@ SELECT
 FROM 
     event
 WHERE 
-	event_type = 'doc.subscriptionContract.approved'
+	event_type = 'doc.subscriptionContract.approved';
 
 CREATE TABLE app_indicators AS
 SELECT 
     creation.lead_id,
     creation.creation_date,
+	visit.visit,
     approval.approved_date,
 	EXTRACT( DAY FROM approval.approved_date - creation.creation_date) AS approval_time
 FROM 
     creation
+LEFT JOIN 
+    visit
+ON 
+   	creation.lead_id = visit.lead_id
 LEFT JOIN 
     approval
 ON 
